@@ -128,32 +128,80 @@ def labelImages(src, res):
           r[11] = 'null'
         wtr.writerow(r[0:12])
 
-# labelImages()
+def fixJpg(src, res):
+  with open(src, 'rb') as source:
+    rdr = csv.reader(source, delimiter=',')
+    with open(res, 'wb') as result:
+      wtr = csv.writer(result)
+      for r in rdr:
+        if r[11] == '.jpg':
+          url = r[10]
+          if url.startswith('https://stockx-360.imgix.net/'):
+            trim1 = r"(.*?)"
+            trim2 = r"https://stockx-360.imgix.net/(.*?)/"
+            image_source = ''.join(url)
+            image_filename = ''.join(re.findall(trim2,url)) + '.jpg'
+            r[10] = image_source
+            r[11] = image_filename
+          wtr.writerow(r[0:12])
 
-with open('stockxData/result7.csv', 'rb') as source, open('result8.csv','w') as result:
-    result.writelines(unique_everseen(source))
-    
-with open('stockxData/result8.csv', 'rb') as source:
-  rdr = csv.reader(source, delimiter=',')
-  count = 0
-  for r in rdr:
-    # if not ('jpg' in r[10] or 'jpeg' in r[10] or 'png' in r[10] ):
-    # if r[10] == 'https://stockx.imgix.net/Reebok-Answer-IV-Kobe-Bryant-PE.png':
-    # if not os.path.isfile('result7/' + r[11]) and r[11] != 'null':
-    count += 1
-    print count
-    print r[11]
-# trim2 = r"https://stockx.imgix.net/(.)"
-# url = 'https://stockx.imgix.net/Under-Armour-Curry-5-White.png'
-# print ''.join(re.findall(trim2,url))
-# print url
-# listUrl = list(url)
-# listUrl[25] = url[25].swapcase()
-# print ''.join(listUrl)
-# new_url = url.replace('.png', '.jpg')
-# print url
-# print new_url
-# response = urllib2.urlopen("https://stockx.imgix.net/Adidas-Superstar-Captain-Tsubasa.png")
-# info = response.info()
-# for header in info.headers:
-#     print header
+def faultyToNull(src1, src2, res):
+  faulty = set()
+  with open(src1, 'rb') as source1:
+    rdr1 = csv.reader(source1, delimiter=',')
+    for r1 in rdr1:
+      faulty.add(r1[0])
+      print 'added to set: ' + str(r1[0])
+      print 'set length: ' , len(faulty)
+  with open(src2, 'rb') as source2:
+    rdr2 = csv.reader(source2, delimiter=',')
+    with open(res, 'wb') as result:
+      wtr = csv.writer(result)
+      count = 0
+      for r2 in rdr2:
+        if str(r2[10]) in faulty:
+          count = count + 1
+          print 'found faulty: ', count, ' ', r2[10]
+          r2[10] = 'null'
+        wtr.writerow(r2)
+
+def compareTotal(src1, src2, res):
+  downloaded = set()
+  with open(src1, 'rb') as source1:
+    rdr1 = csv.reader(source1, delimiter=',')
+    for r1 in rdr1:
+      downloaded.add(str(r1[0]))
+      print 'added to set: ' + str(r1[0])
+      print 'set length: ' , len(downloaded)
+  with open(src2, 'rb') as source2:
+    rdr2 = csv.reader(source2, delimiter=',')
+    with open(res, 'wb') as result:
+      wtr = csv.writer(result)
+      count = 0
+      for r2 in rdr2:
+        if str(r2[11]) in downloaded:
+          count = count + 1
+      print 'valid filenames : ', count
+        # wtr.writerow(r2)
+
+# fixJpg("../stockxData/result8.csv", "../stockxData/result9.csv")
+# faultyToNull('../stockxData/faultyUrl.csv', '../stockxData/result8.csv', '../stockxData/result9.csv')
+compareTotal('../stockxData/updatedNames.csv', '../stockxData/result9.csv', '../stockxData/result10.csv')
+
+# with open('../stockxData/result9.csv', 'rb') as source1:
+#   rdr1 = csv.reader(source1, delimiter=',')
+#   with open('../stockxData/updatedNames.csv', 'rb') as source2:
+#     rdr2 = csv.reader(source2, delimiter=',')
+#     count1 = 0
+#     count2 = 0
+#     for r1 in rdr1:
+#       # if 'null' == str(r1[10]):
+#       count1 = count1 + 1
+#     print count1 
+#     for r2 in rdr2:
+#       if r2[0] == '.jpg':
+#         count2 = count2 - 1
+#       count2 = count2 + 1
+#     print count2
+
+

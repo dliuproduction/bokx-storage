@@ -79,7 +79,7 @@ def download_image(dest_dir, row):
     image_filename = row['image-name']
     try:
 
-        fout = open("stockxData/faultyUrl.csv","a")
+        fout = open("../stockxData/faultyUrl.csv","a")
         logging.info("downloading image %s" % image_url)
         tmp_file_name, headers = urlretrieve(image_url)
         content_type = headers.get("Content-Type")
