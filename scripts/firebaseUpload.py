@@ -45,8 +45,15 @@ def uploadDatabase(src):
 
   with open(src, "r") as source:
     csvreader = csv.reader(source, delimiter=',')
+    skip = 1
     csvreader.next()
     count = 0
+
+    while count < skip:
+      count = count + 1
+      csvreader.next()
+      print 'skipped line: ', count
+
     for row in csvreader:
 
       shoeid = str(row[0])
@@ -59,7 +66,7 @@ def uploadDatabase(src):
       colorway = str(row[7])
       retail_price = str(row[8])
       release_date = str(row[9])
-      image_name = str(row[11])
+      image_source = str(row[11])
 
       data = {
         u'brand': unicode(brand),
@@ -71,80 +78,46 @@ def uploadDatabase(src):
         u'colorway': unicode(colorway),
         u'retail_price': unicode(retail_price),
         u'release_date': unicode(release_date),
-        u'image_name': unicode(image_name),
-        u'shoeid': {
-          u'new':{
-            '5': unicode(shoeid + '5N'),
-            '6': unicode(shoeid + '6N'),
-            '7': unicode(shoeid + '7N'),
-            '7.5': unicode(shoeid + '7HN'),
-            '8': unicode(shoeid + '8N'),
-            '8.5': unicode(shoeid + '8HN'),
-            '9': unicode(shoeid + '9N'),
-            '9.5': unicode(shoeid + '9HN'),
-            '10': unicode(shoeid + '10N'),
-            '10.5': unicode(shoeid + '10HN'),
-            '11': unicode(shoeid + '11N'),
-            '11.5': unicode(shoeid + '11HN'),
-            '12': unicode(shoeid + '12N'),
-            '12.5': unicode(shoeid + '12HN'),
-            '13': unicode(shoeid + '13N'),
-            '14': unicode(shoeid + '14N'),
-            '15': unicode(shoeid + '15N'),
-            '16': unicode(shoeid + '16N')
-          },
-          u'used':{
-            '5': unicode(shoeid + '5U'),
-            '6': unicode(shoeid + '6U'),
-            '7': unicode(shoeid + '7U'),
-            '7.5': unicode(shoeid + '7HU'),
-            '8': unicode(shoeid + '8U'),
-            '8.5': unicode(shoeid + '8HU'),
-            '9': unicode(shoeid + '9U'),
-            '9.5': unicode(shoeid + '9HU'),
-            '10': unicode(shoeid + '10U'),
-            '10.5': unicode(shoeid + '10HU'),
-            '11': unicode(shoeid + '11U'),
-            '11.5': unicode(shoeid + '11HU'),
-            '12': unicode(shoeid + '12U'),
-            '12.5': unicode(shoeid + '12HU'),
-            '13': unicode(shoeid + '13U'),
-            '14': unicode(shoeid + '14U'),
-            '15': unicode(shoeid + '15U'),
-            '16': unicode(shoeid + '16U')
-          }
-        }
+        u'image_source': unicode(image_source),
+        u'shoeid': unicode(shoeid)
       }
 
       if brand == 'null':
-        doc_ref = db.collection(u'brand').document(u'null') \
-        .collection(u'name').document(name)
-      else:
-        if series == 'null':
-          doc_ref = db.collection(u'brand').document(brand) \
-          .collection(u'series').document(u'null') \
+        if ('adidas' in name) or ('Adidas' in name):
+          catalog_ref = db.collection(u'shoeCatalog').document(u'adidas') \
           .collection(u'name').document(name)
         else:
-          if model == 'null':
-            doc_ref = db.collection(u'brand').document(brand) \
-            .collection(u'series').document(series) \
-            .collection(u'model').document(u'null') \
-            .collection(u'name').document(name)
-          else:
-            if version == 'null':
-              doc_ref = db.collection(u'brand').document(brand) \
-              .collection(u'series').document(series) \
-              .collection(u'model').document(model) \
-              .collection(u'version').document(u'null') \
-              .collection(u'name').document(name)
-            else:
-              doc_ref = db.collection(u'brand').document(brand) \
-              .collection(u'series').document(series) \
-              .collection(u'model').document(model) \
-              .collection(u'version').document(version) \
-              .collection(u'name').document(name)
+          catalog_ref = db.collection(u'shoeCatalog').document(u'null') \
+          .collection(u'name').document(name)
+      else:
+        # if series == 'null':
+        #   catalog_ref = db.collection(u'shoeCatalog').document(brand) \
+        #   .collection(u'series').document(u'null') \
+        #   .collection(u'name').document(name)
+        # else:
+        #   if model == 'null':
+        #     catalog_ref = db.collection(u'shoeCatalog').document(brand) \
+        #     .collection(u'series').document(series) \
+        #     .collection(u'model').document(u'null') \
+        #     .collection(u'name').document(name)
+        #   else:
+        #     if version == 'null':
+        #       catalog_ref = db.collection(u'shoeCatalog').document(brand) \
+        #       .collection(u'series').document(series) \
+        #       .collection(u'model').document(model) \
+        #       .collection(u'version').document(u'null') \
+        #       .collection(u'name').document(name)
+        #     else:
+        #       catalog_ref = db.collection(u'shoeCatalog').document(brand) \
+        #       .collection(u'series').document(series) \
+        #       .collection(u'model').document(model) \
+        #       .collection(u'version').document(version) \
+        #       .collection(u'name').document(name)
 
-      doc_ref.set(data)
+      map_ref = db.collection(u'shoeMap').document(shoeid)
+
+      catalog_ref.set(data)
+      map_ref.set(data)
 
       count = count + 1
       print 'uploaded shoe data: #', count, ' ', name
